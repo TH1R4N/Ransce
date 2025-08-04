@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Business Name Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .poll-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .poll-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .poll-description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #444;
+            margin-bottom: 25px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .selection-info {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .ranking-instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1.05em;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .options-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .options-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .options-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 15px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            background: #f8f9ff;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .option.rank-1 {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-color: #28a745;
+            color: white;
+        }
+
+        .option.rank-2 {
+            background: linear-gradient(135deg, #007bff, #17a2b8);
+            border-color: #007bff;
+            color: white;
+        }
+
+        .option.rank-3 {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            border-color: #ffc107;
+            color: #333;
+        }
+
+        .option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .option.disabled:hover {
+            border-color: #e0e0e0;
+            transform: none;
+            background: #fafafa;
+        }
+
+        .option input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        .option-text {
+            font-size: 1.05em;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .rank-badge {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-left: 10px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .rank-1 .rank-badge {
+            background: #28a745;
+            color: white;
+        }
+
+        .rank-2 .rank-badge {
+            background: #007bff;
+            color: white;
+        }
+
+        .rank-3 .rank-badge {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .selection-counter {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #667eea;
+        }
+
+        .ranking-summary {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+
+        .ranking-summary h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .ranked-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .rank-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            color: white;
+        }
+
+        .rank-number.first { background: #28a745; color: white; }
+        .rank-number.second { background: #007bff; color: white; }
+        .rank-number.third { background: #ffc107; color: #333; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+
+        .result-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 15px;
+        }
+
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .result-bar {
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+            margin: 10px 0;
+            transition: width 0.8s ease;
+        }
+
+        .restart-btn {
+            margin-top: 25px;
+            padding: 12px 30px;
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 600px) {
+            .poll-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .option {
+                padding: 12px 15px;
+            }
+
+            .option-text {
+                font-size: 0.95em;
+            }
+
+            .options-container {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poll-container">
+        <div class="poll-form">
+            <h1>🏢 Business Name Survey</h1>
+            <p class="poll-description">Please help Rance choose the perfect name for our DIY/Handyman business!</p>
+            
+            <div class="question">Which of the following business resonates best with Rance's Idea and personality?</div>
+            
+            <div class="selection-info">
+                Select your top 3 choices and provide your details
+            </div>
+
+            <div class="user-info-section">
+                <h3 style="color: #333; margin-bottom: 15px; text-align: center;">Your Information</h3>
+                <div style="display: grid; gap: 15px; margin-bottom: 25px;">
+                    <div>
+                        <label for="userName" style="display: block; margin-bottom: 5px; color: #555; font-weight: 500;">Name:</label>
+                        <input type="text" id="userName" placeholder="Enter your name" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    </div>
+                    <div>
+                        <label for="userEmail" style="display: block; margin-bottom: 5px; color: #555; font-weight: 500;">Email:</label>
+                        <input type="email" id="userEmail" placeholder="Enter your email" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ranking-instructions">
+                📋 Instructions: Click to select up to 3 names, then click again to rank them as 1st, 2nd, and 3rd choice
+            </div>
+            
+            <div class="selection-counter">
+                <span id="selectedCount">0</span> of 3 selected
+            </div>
+
+            <div class="ranking-summary" id="rankingSummary" style="display: none;">
+                <h3>🏆 Your Current Rankings</h3>
+                <div id="rankedList"></div>
+            </div>
+            
+            <div class="options-container">
+                <label class="option" data-value="FixCraft Academy">
+                    <input type="checkbox" value="FixCraft Academy">
+                    <span class="option-text">FixCraft Academy</span>
+                </label>
+                
+                <label class="option" data-value="HandyHow Solutions">
+                    <input type="checkbox" value="HandyHow Solutions">
+                    <span class="option-text">HandyHow Solutions</span>
+                </label>
+                
+                <label class="option" data-value="DIY Mentor Pro">
+                    <input type="checkbox" value="DIY Mentor Pro">
+                    <span class="option-text">DIY Mentor Pro</span>
+                </label>
+                
+                <label class="option" data-value="BuildWise Services">
+                    <input type="checkbox" value="BuildWise Services">
+                    <span class="option-text">BuildWise Services</span>
+                </label>
+                
+                <label class="option" data-value="The Fix Guide">
+                    <input type="checkbox" value="The Fix Guide">
+                    <span class="option-text">The Fix Guide</span>
+                </label>
+                
+                <label class="option" data-value="SkillCraft Studios">
+                    <input type="checkbox" value="SkillCraft Studios">
+                    <span class="option-text">SkillCraft Studios</span>
+                </label>
+                
+                <label class="option" data-value="HowTo Handyman">
+                    <input type="checkbox" value="HowTo Handyman">
+                    <span class="option-text">HowTo Handyman</span>
+                </label>
+                
+                <label class="option" data-value="DIY Coach & Crew">
+                    <input type="checkbox" value="DIY Coach & Crew">
+                    <span class="option-text">DIY Coach & Crew</span>
+                </label>
+                
+                <label class="option" data-value="MentorMend">
+                    <input type="checkbox" value="MentorMend">
+                    <span class="option-text">MentorMend</span>
+                </label>
+                
+                <label class="option" data-value="Project Partner Pros">
+                    <input type="checkbox" value="Project Partner Pros">
+                    <span class="option-text">Project Partner Pros</span>
+                </label>
+                
+                <label class="option" data-value="WiseHands Collective">
+                    <input type="checkbox" value="WiseHands Collective">
+                    <span class="option-text">WiseHands Collective</span>
+                </label>
+                
+                <label class="option" data-value="DIY Skillshare Hub">
+                    <input type="checkbox" value="DIY Skillshare Hub">
+                    <span class="option-text">DIY Skillshare Hub</span>
+                </label>
+                
+                <label class="option" data-value="HandyGuides">
+                    <input type="checkbox" value="HandyGuides">
+                    <span class="option-text">HandyGuides</span>
+                </label>
+                
+                <label class="option" data-value="CraftCoach">
+                    <input type="checkbox" value="CraftCoach">
+                    <span class="option-text">CraftCoach</span>
+                </label>
+                
+                <label class="option" data-value="Build Buddy Network">
+                    <input type="checkbox" value="Build Buddy Network">
+                    <span class="option-text">Build Buddy Network</span>
+                </label>
+                
+                <label class="option" data-value="ProHelp DIY">
+                    <input type="checkbox" value="ProHelp DIY">
+                    <span class="option-text">ProHelp DIY</span>
+                </label>
+                
+                <label class="option" data-value="The Fix Assist">
+                    <input type="checkbox" value="The Fix Assist">
+                    <span class="option-text">The Fix Assist</span>
+                </label>
+                
+                <label class="option" data-value="DIY Support Squad">
+                    <input type="checkbox" value="DIY Support Squad">
+                    <span class="option-text">DIY Support Squad</span>
+                </label>
+                
+                <label class="option" data-value="Workshop Wisdom">
+                    <input type="checkbox" value="Workshop Wisdom">
+                    <span class="option-text">Workshop Wisdom</span>
+                </label>
+                
+                <label class="option" data-value="Fix Mentor">
+                    <input type="checkbox" value="Fix Mentor">
+                    <span class="option-text">Fix Mentor</span>
+                </label>
+                
+                <label class="option" data-value="SkillSet Support">
+                    <input type="checkbox" value="SkillSet Support">
+                    <span class="option-text">SkillSet Support</span>
+                </label>
+                
+                <label class="option" data-value="TaskTrainer">
+                    <input type="checkbox" value="TaskTrainer">
+                    <span class="option-text">TaskTrainer</span>
+                </label>
+                
+                <label class="option" data-value="RepairRight Crew">
+                    <input type="checkbox" value="RepairRight Crew">
+                    <span class="option-text">RepairRight Crew</span>
+                </label>
+                
+                <label class="option" data-value="HandyHelp Academy">
+                    <input type="checkbox" value="HandyHelp Academy">
+                    <span class="option-text">HandyHelp Academy</span>
+                </label>
+                
+                <label class="option" data-value="ProjectWise">
+                    <input type="checkbox" value="ProjectWise">
+                    <span class="option-text">ProjectWise</span>
+                </label>
+                
+                <label class="option" data-value="DIY Navigator">
+                    <input type="checkbox" value="DIY Navigator">
+                    <span class="option-text">DIY Navigator</span>
+                </label>
+                
+                <label class="option" data-value="CrewCraft">
+                    <input type="checkbox" value="CrewCraft">
+                    <span class="option-text">CrewCraft</span>
+                </label>
+                
+                <label class="option" data-value="HomeHero Mentors">
+                    <input type="checkbox" value="HomeHero Mentors">
+                    <span class="option-text">HomeHero Mentors</span>
+                </label>
+                
+                <label class="option" data-value="BuildMentor">
+                    <input type="checkbox" value="BuildMentor">
+                    <span class="option-text">BuildMentor</span>
+                </label>
+                
+                <label class="option" data-value="Fixer Friends">
+                    <input type="checkbox" value="Fixer Friends">
+                    <span class="option-text">Fixer Friends</span>
+                </label>
+                
+                <label class="option" data-value="Guide & Glide">
+                    <input type="checkbox" value="Guide & Glide">
+                    <span class="option-text">Guide & Glide</span>
+                </label>
+                
+                <label class="option" data-value="Repair Relay">
+                    <input type="checkbox" value="Repair Relay">
+                    <span class="option-text">Repair Relay</span>
+                </label>
+                
+                <label class="option" data-value="SkillBuild Crew">
+                    <input type="checkbox" value="SkillBuild Crew">
+                    <span class="option-text">SkillBuild Crew</span>
+                </label>
+                
+                <label class="option" data-value="Task Tackle Team">
+                    <input type="checkbox" value="Task Tackle Team">
+                    <span class="option-text">Task Tackle Team</span>
+                </label>
+                
+                <label class="option" data-value="FixFlow">
+                    <input type="checkbox" value="FixFlow">
+                    <span class="option-text">FixFlow</span>
+                </label>
+                
+                <label class="option" data-value="HomeHelp Hive">
+                    <input type="checkbox" value="HomeHelp Hive">
+                    <span class="option-text">HomeHelp Hive</span>
+                </label>
+                
+                <label class="option" data-value="Craftwise Crew">
+                    <input type="checkbox" value="Craftwise Crew">
+                    <span class="option-text">Craftwise Crew</span>
+                </label>
+                
+                <label class="option" data-value="MendMentor">
+                    <input type="checkbox" value="MendMentor">
+                    <span class="option-text">MendMentor</span>
+                </label>
+                
+                <label class="option" data-value="ProjectPal">
+                    <input type="checkbox" value="ProjectPal">
+                    <span class="option-text">ProjectPal</span>
+                </label>
+                
+                <label class="option" data-value="DIY Ally">
+                    <input type="checkbox" value="DIY Ally">
+                    <span class="option-text">DIY Ally</span>
+                </label>
+                
+                <label class="option" data-value="BuildBoost">
+                    <input type="checkbox" value="BuildBoost">
+                    <span class="option-text">BuildBoost</span>
+                </label>
+                
+                <label class="option" data-value="SkillSync">
+                    <input type="checkbox" value="SkillSync">
+                    <span class="option-text">SkillSync</span>
+                </label>
+                
+                <label class="option" data-value="The Handy Collective">
+                    <input type="checkbox" value="The Handy Collective">
+                    <span class="option-text">The Handy Collective</span>
+                </label>
+                
+                <label class="option" data-value="🙌🏻 Hands on">
+                    <input type="checkbox" value="🙌🏻 Hands on">
+                    <span class="option-text">🙌🏻 Hands on</span>
+                </label>
+                
+                <label class="option" data-value="DIY Dude">
+                    <input type="checkbox" value="DIY Dude">
+                    <span class="option-text">DIY Dude</span>
+                </label>
+                
+                <label class="option" data-value="DIY assist">
+                    <input type="checkbox" value="DIY assist">
+                    <span class="option-text">DIY assist</span>
+                </label>
+                
+                <label class="option" data-value="DIY enable">
+                    <input type="checkbox" value="DIY enable">
+                    <span class="option-text">DIY enable</span>
+                </label>
+                
+                <label class="option" data-value="DIYoda">
+                    <input type="checkbox" value="DIYoda">
+                    <span class="option-text">DIYoda</span>
+                </label>
+                
+                <label class="option" data-value="EquipReno">
+                    <input type="checkbox" value="EquipReno">
+                    <span class="option-text">EquipReno</span>
+                </label>
+                
+                <label class="option" data-value="Door to door DIY">
+                    <input type="checkbox" value="Door to door DIY">
+                    <span class="option-text">Door to door DIY</span>
+                </label>
+                
+                <label class="option" data-value="DIY4U">
+                    <input type="checkbox" value="DIY4U">
+                    <span class="option-text">DIY4U</span>
+                </label>
+                
+                <label class="option" data-value="DIYDA">
+                    <input type="checkbox" value="DIYDA">
+                    <span class="option-text">DIYDA</span>
+                </label>
+            </div>
+            
+            <button class="submit-btn" id="submitBtn" disabled>Submit Rankings</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>📊 Poll Results</h2>
+            <div id="resultsContainer"></div>
+            <button class="restart-btn" onclick="restartPoll()">Vote Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Poll data storage
+        let votes = {};
+        let rankings = {}; // Store ranking points
+        const maxSelections = 3;
+        let selectedOptions = [];
+        let currentRanks = {}; // Track current rank of each selected option
+
+        // Initialize vote counts and rankings
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            votes[checkbox.value] = 0;
+            rankings[checkbox.value] = 0;
+        });
+
+        // Handle option clicks for selection and ranking
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                if (option.classList.contains('disabled')) {
+                    e.preventDefault();
+                    return;
+                }
+
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                const value = checkbox.value;
+
+                if (checkbox.checked) {
+                    // If already selected, cycle through ranks or deselect
+                    handleRanking(option, value);
+                } else {
+                    // Select the option if under limit
+                    if (selectedOptions.length < maxSelections) {
+                        checkbox.checked = true;
+                        selectedOptions.push(value);
+                        currentRanks[value] = 1; // Start with rank 1
+                        updateOptionDisplay(option, 1);
+                    }
+                }
+
+                updateInterface();
+            });
+        });
+
+        function handleRanking(option, value) {
+            const currentRank = currentRanks[value];
+            
+            if (currentRank === 3) {
+                // Deselect if at rank 3
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                checkbox.checked = false;
+                selectedOptions = selectedOptions.filter(v => v !== value);
+                delete currentRanks[value];
+                option.classList.remove('selected', 'rank-1', 'rank-2', 'rank-3');
+                const badge = option.querySelector('.rank-badge');
+                if (badge) badge.remove();
+            } else {
+                // Increment rank
+                const newRank = currentRank + 1;
+                currentRanks[value] = newRank;
+                updateOptionDisplay(option, newRank);
+            }
+        }
+
+        function updateOptionDisplay(option, rank) {
+            // Remove existing rank classes
+            option.classList.remove('rank-1', 'rank-2', 'rank-3');
+            
+            // Add new rank class
+            option.classList.add('selected', `rank-${rank}`);
+            
+            // Update or create rank badge
+            let badge = option.querySelector('.rank-badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'rank-badge';
+                option.appendChild(badge);
+            }
+            
+            const rankText = rank === 1 ? '1st Choice' : rank === 2 ? '2nd Choice' : '3rd Choice';
+            badge.textContent = rankText;
+        }
+
+        function updateInterface() {
+            const selectedCount = selectedOptions.length;
+            const userName = document.getElementById('userName') ? document.getElementById('userName').value.trim() : '';
+            const userEmail = document.getElementById('userEmail') ? document.getElementById('userEmail').value.trim() : '';
+            
+            // Update counter
+            document.getElementById('selectedCount').textContent = selectedCount;
+            
+            // Update submit button state - require selections AND user info
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = selectedCount === 0 || !userName || !userEmail;
+            
+            // Handle max selection limit
+            document.querySelectorAll('.option').forEach(option => {
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                const value = checkbox.value;
+                
+                if (!checkbox.checked && selectedCount >= maxSelections) {
+                    option.classList.add('disabled');
+                } else if (!selectedOptions.includes(value)) {
+                    option.classList.remove('disabled');
+                }
+            });
+            
+            // Update ranking summary
+            updateRankingSummary();
+            
+            // Add pulse animation to counter
+            const counter = document.querySelector('.selection-counter');
+            counter.classList.add('pulse');
+            setTimeout(() => counter.classList.remove('pulse'), 300);
+        }
+
+        // Add event listeners for user info fields (with null checks)
+        const userNameField = document.getElementById('userName');
+        const userEmailField = document.getElementById('userEmail');
+        
+        if (userNameField) userNameField.addEventListener('input', updateInterface);
+        if (userEmailField) userEmailField.addEventListener('input', updateInterface);
+
+        function updateRankingSummary() {
+            const summary = document.getElementById('rankingSummary');
+            const rankedList = document.getElementById('rankedList');
+            
+            if (selectedOptions.length === 0) {
+                summary.style.display = 'none';
+                return;
+            }
+            
+            summary.style.display = 'block';
+            rankedList.innerHTML = '';
+            
+            // Sort selected options by rank
+            const sortedByRank = selectedOptions
+                .map(option => ({ name: option, rank: currentRanks[option] }))
+                .sort((a, b) => a.rank - b.rank);
+            
+            sortedByRank.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'ranked-item';
+                
+                const rankClasses = ['', 'first', 'second', 'third'];
+                const rankTexts = ['', '1st', '2nd', '3rd'];
+                
+                div.innerHTML = `
+                    <div class="rank-number ${rankClasses[item.rank]}">${rankTexts[item.rank]}</div>
+                    <div>${item.name}</div>
+                `;
+                
+                rankedList.appendChild(div);
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const userNameField = document.getElementById('userName');
+            const userEmailField = document.getElementById('userEmail');
+            
+            const userName = userNameField ? userNameField.value.trim() : '';
+            const userEmail = userEmailField ? userEmailField.value.trim() : '';
+            
+            // Validate user information
+            if (!userName || !userEmail) {
+                alert('Please enter your name and email before submitting.');
+                return;
+            }
+            
+            if (!validateEmail(userEmail)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Record votes and rankings
+            selectedOptions.forEach(option => {
+                votes[option]++;
+                const rank = currentRanks[option];
+                // Award points: 1st = 3 points, 2nd = 2 points, 3rd = 1 point
+                rankings[option] += (4 - rank);
+            });
+            
+            // Send data to Google Sheets
+            submitToGoogleSheets(userName, userEmail);
+            
+            // Show results
+            showResults();
+        });
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        async function submitToGoogleSheets(name, email) {
+            // Prepare the data
+            const timestamp = new Date().toISOString();
+            const choices = selectedOptions
+                .map(option => ({ name: option, rank: currentRanks[option] }))
+                .sort((a, b) => a.rank - b.rank);
+            
+            const firstChoice = choices.length > 0 ? choices[0].name : '';
+            const secondChoice = choices.length > 1 ? choices[1].name : '';
+            const thirdChoice = choices.length > 2 ? choices[2].name : '';
+            
+            const data = {
+                timestamp: timestamp,
+                name: name,
+                email: email,
+                firstChoice: firstChoice,
+                secondChoice: secondChoice,
+                thirdChoice: thirdChoice,
+                allChoices: choices.map(c => `${c.rank}. ${c.name}`).join(', ')
+            };
+            
+            // Google Apps Script Web App URL
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbztAa-HuazZIsveYJTYGmeNlKorcNvYYt2ir63FoXPyM4MWlSaIpmLsVT_orjtk8lKhBA/exec';
+            
+            try {
+                const response = await fetch(scriptURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                    mode: 'no-cors' // Required for Google Apps Script
+                });
+                
+                console.log('Data submitted successfully');
+                // Note: Due to no-cors mode, we can't check the response
+                // But the data should be sent to Google Sheets
+                
+            } catch (error) {
+                console.error('Error submitting data:', error);
+                // Still show results even if submission fails
+            }
+        }
